@@ -2,6 +2,17 @@
 
 A complete AI-powered parking management system using ESP32-CAM with Edge Impulse machine learning for car and payment detection, dual servo motor gates, IR sensor exit control, and real-time web streaming.
 
+## 📸 Demo Images
+
+![System Demo 1](Demo%20Images/20250719214608.jpg)
+*Only showing token will not open gate*
+![System Demo 2](Demo%20Images/image%20(34).jpg)
+*Only showing car will not open gate*
+
+![Entry Gate Operation](Demo%20Images/20250719214716.jpg)
+*Valid payment and car together*
+
+
 ## 🚗 Features
 
 - **AI Object Detection**: Car and coin recognition using Edge Impulse ML model
