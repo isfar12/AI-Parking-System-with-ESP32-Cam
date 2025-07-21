@@ -97,8 +97,8 @@
 #endif
 
 /* WiFi Configuration ------------------------------------------------------ */
-const char* ssid = "TENZIR";       // Replace with your WiFi network name
-const char* password = "cse@tenzir25"; // Replace with your WiFi password
+const char* ssid = "ESPCAM";       // Replace with your WiFi network name
+const char* password = "espcam@25"; // Replace with your WiFi password
 
 /* Web Server Configuration ------------------------------------------------ */
 WebServer server(80);
