@@ -95,10 +95,10 @@
 #else
 #error "Camera model not selected"
 #endif
-
+    
 /* WiFi Configuration ------------------------------------------------------ */
 const char* ssid = "ESPCAM";       // Replace with your WiFi network name
-const char* password = "espcam@25"; // Replace with your WiFi password
+const char* password = "12345678"; // Replace with your WiFi password
 
 /* Web Server Configuration ------------------------------------------------ */
 WebServer server(80);
