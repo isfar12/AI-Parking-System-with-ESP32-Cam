@@ -304,7 +304,49 @@ void loop()
     if (millis() - last_memory_check > 30000) { // Every 30 seconds instead of 10
         last_memory_check = millis();
     }
-
+// WiFi monitoring and retry logic
+// WiFi monitoring and retry logic
+static unsigned long last_wifi_check = 0;
+static bool was_connected = false;
+static unsigned long last_connection_attempt = 0;
+if (millis() - last_wifi_check > 3000) {
+    last_wifi_check = millis();
+    if (WiFi.status() != WL_CONNECTED) {
+        if (was_connected) {
+            Serial.println("WiFi connection lost!");
+            was_connected = false;
+        }
+        oled_display_message("WiFi Status", "NOT CONNECTED", -1);
+        if (millis() - last_connection_attempt > 10000) {
+            last_connection_attempt = millis();
+            Serial.println("Attempting WiFi reconnection...");
+            WiFi.disconnect();
+            delay(1000);
+            WiFi.begin(ssid, password);
+            oled_display_message("WiFi", "Connecting...", -1);
+            delay(2000);
+            if (WiFi.status() == WL_CONNECTED) {
+                Serial.println("WiFi reconnected!");
+                was_connected = true;
+            } else {
+                Serial.println("WiFi reconnection failed, will retry...");
+            }
+        }
+    } else {
+        if (!was_connected) {
+            Serial.println("WiFi connected!");
+            Serial.print("Stream URL: http://");
+            Serial.print(WiFi.localIP());
+            Serial.println("/");
+            was_connected = true;
+        }
+        String url = "http://" + WiFi.localIP().toString() + "/";
+        oled_display_message("Stream URL", url, -1);
+    }
+}
+if (WiFi.status() == WL_CONNECTED) {
+    server.handleClient();
+}
     // instead of wait_ms, we'll wait on the signal, this allows threads to cancel us...
     if (ei_sleep(5) != EI_IMPULSE_OK) {
         return;
@@ -884,29 +926,36 @@ void display_parking_status(void) {
 void wifi_init(void) {
     Serial.println("Connecting to WiFi...");
     oled_display_message("WiFi", "Connecting...", -1);
-    
-    WiFi.begin(ssid, password);
+    WiFi.mode(WIFI_STA);
     WiFi.setSleep(false);
-    
+    WiFi.setAutoReconnect(true);
+    WiFi.begin(ssid, password);
     int attempts = 0;
-    while (WiFi.status() != WL_CONNECTED && attempts < 20) {
-        delay(500);
-        Serial.print(".");
+    unsigned long start_time = millis();
+    while (WiFi.status() != WL_CONNECTED && attempts < 30) {
+        delay(1000);
         attempts++;
+        Serial.print(".");
+        String attempt_msg = "Try " + String(attempts) + "/30";
+        oled_display_message("WiFi", attempt_msg, -1);
+        if (millis() - start_time > 30000) {
+            break;
+        }
     }
-    
     if (WiFi.status() == WL_CONNECTED) {
-        Serial.println("");
+        Serial.println();
         Serial.println("WiFi connected!");
-        Serial.print("Camera Stream Ready! Go to: http://");
-        Serial.println(WiFi.localIP());
-        
-        oled_display_message("WiFi OK", WiFi.localIP().toString(), -1);
+        Serial.print("Stream URL: http://");
+        Serial.print(WiFi.localIP());
+        Serial.println("/");
+        String url = "http://" + WiFi.localIP().toString() + "/";
+        oled_display_message("Stream URL", url, -1);
         delay(2000);
     } else {
+        Serial.println();
         Serial.println("WiFi connection failed!");
-        oled_display_message("WiFi", "Failed!", -1);
-        delay(2000);
+        oled_display_message("WiFi Status", "NOT CONNECTED", -1);
+        // Don't block, let loop() handle retries
     }
 }
 
